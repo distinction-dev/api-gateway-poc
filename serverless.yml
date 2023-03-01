@@ -1,0 +1,94 @@
+service: ai-marketer-api-gateway
+
+provider:
+  name: aws
+  stage: ${env:STAGE}
+  region: ${env:AWS_REGION}
+
+resources:
+  Resources:
+    # Api Gateway Config
+    AiMApiGateway:
+      Type: AWS::ApiGateway::RestApi
+      Properties:
+        Name: AiMApiGateway-${env:STAGE}
+    # This solves the cors issues with the api gateway 400 error responses
+    GatewayAuthorizerResponses:
+      Type: AWS::ApiGateway::GatewayResponse
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Methods: "'GET,OPTIONS,POST,PUT'"
+        ResponseType: ACCESS_DENIED
+        ResponseTemplates:
+          application/json: '{"message":"$context.authorizer.stringKey"}'
+        RestApiId: 
+          Ref: AiMApiGateway
+    GatewayDenyResponses:
+      Type: AWS::ApiGateway::GatewayResponse
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Methods: "'GET,OPTIONS,POST,PUT'"
+        ResponseType: DEFAULT_4XX
+        ResponseTemplates:
+          application/json: '{"message":"$context.authorizer.stringKey"}'
+        RestApiId: 
+          Ref: AiMApiGateway
+    GatewayErrorResponses:
+      Type: AWS::ApiGateway::GatewayResponse
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Methods: "'GET,OPTIONS,POST,PUT'"
+        ResponseType: DEFAULT_5XX
+        RestApiId: 
+          Ref: AiMApiGateway
+    WebSocketApi:
+      Type: 'AWS::ApiGatewayV2::Api'
+      Properties:
+        Name: usercomm-websocket-api-${env:STAGE}
+        ProtocolType: WEBSOCKET
+        RouteSelectionExpression: $request.body.action
+    WebSocketApiStage:
+      Type: 'AWS::ApiGatewayV2::Stage'
+      Properties:
+        StageName: ${env:STAGE}
+        Description: ${env:STAGE} Stage for websocket api
+        ApiId: !Ref WebSocketApi
+        AutoDeploy: true
+
+  Outputs:
+    # Exporting the apigateway id
+    apiGatewayRestApiId:
+      Value:
+        Ref: AiMApiGateway
+      Export:
+        Name: AiMApiGateway-restApiId-${env:STAGE}
+    # Exporting the Api gateway resource id
+    apiGatewayRestApiRootResourceId:
+      Value:
+        Fn::GetAtt:
+          - AiMApiGateway
+          - RootResourceId
+      Export:
+        Name: AiMApiGateway-rootResourceId-${env:STAGE}
+    # Websocket API id
+    websocketApiApiId:
+      Value:
+        Ref: WebSocketApi
+      Export:
+        Name: WebSocketApi-ApiId-${env:STAGE}
+    # Websocket URL
+    websocketUrl:
+      Value:
+        Fn::GetAtt:
+          - WebSocketApi
+          - ApiEndpoint
+      Export:
+        Name: WebSocketApi-URL-${env:STAGE}
+        
+    

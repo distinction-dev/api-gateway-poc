@@ -1,0 +1,28 @@
+{
+  "name": "ai-marketer-api-gateway",
+  "version": "1.0.0",
+  "description": "This repository contains api gateway and the lambda authorizer required to",
+  "main": "index.js",
+  "scripts": {
+    "deploy": "npm run deploy:beta && npm run deploy:blue && npm run deploy:green",
+    "deploy:uat": "dotenv -e .envconfig/.env.uat -e .envconfig/.env -- serverless deploy",
+    "deploy:beta": "dotenv -e .envconfig/.env.beta -e .envconfig/.env -- serverless deploy",
+    "deploy:blue": "dotenv -e .envconfig/.env.blue -e .envconfig/.env -- serverless deploy",
+    "deploy:green": "dotenv -e .envconfig/.env.green -e .envconfig/.env -- serverless deploy",
+    "deploy:alpha": "dotenv -e .envconfig/.env.alpha -e .envconfig/.env -- serverless deploy"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/online-directory/ai-marketer-api-gateway.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/online-directory/ai-marketer-api-gateway/issues"
+  },
+  "homepage": "https://github.com/online-directory/ai-marketer-api-gateway#readme",
+  "devDependencies": {
+    "dotenv-cli": "^4.0.0",
+    "serverless": "^2.35.0"
+  }
+}
